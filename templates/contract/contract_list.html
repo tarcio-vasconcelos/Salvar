@@ -1,0 +1,127 @@
+{% extends "base/header.html" %}
+{% block title %}Lista{% endblock title %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-file-contract"></i> Contratos</h2>
+    </div>
+    <!-- Filtro de Status -->
+     <div>
+        <h6>Dicas: </h6>
+        <ul>
+            <li>Digite "vige" para encontrar apenas contratos vigentes</li>
+            <li>Digite "fixo" para encontrar apenas contratos de saldo fixo</li>
+        </ul>
+    </div>
+    <!--Filtro-->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" class="form-control" name="search" 
+                           placeholder="Buscar por número, empresa ou gestor..." 
+                           value="{{ search }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Contratos -->
+    {% if contratos %}
+    <div class="row">
+        {% for contrato in contratos %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                         <h6 class="mb-0">{{ contrato.numero_contrato }}</h6>
+                         {% if contrato.status != 'ativo' %}
+                         <h6 class="mb-0">{{ contrato.status }}</h6>
+                         {% endif %}
+                         {% if contrato.precisa_notificacao_saldo or contrato.precisa_notificacao_vencimento %}
+                          <span class="badge bg-warning">
+                            <i class="fas fa-exclamation-triangle">Atenção</i>
+                          </span>
+                         {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title">{{ contrato.nome_empresa }}</h6>
+                        <p class="card-text text-muted small">{{ contrato.objeto|truncatechars:100 }}</p>
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Saldo Total</small>
+                                <div class="fw-bold text-success">R$ {{ contrato.saldo_total }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Utilizado</small>
+                                <div class="fw-bold {% if contrato.percentual_utilizado > 70 %}text-danger{% else %}text-info{% endif %}">
+                                    {{ contrato.percentual_utilizado|floatformat:1 }}%
+                                </div>
+                            </div>
+                        </div>
+                        <!--Barra de Progresso-->
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar {% if contrato.percentual_utilizado > 70 %}bg-danger{% elif contrato.percentual_utilizado > 50 %}bg-warning{% else %}bg-success{% endif %}" 
+                                 style="width: {{ contrato.percentual_utilizado }}%"></div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <small class="text-muted">Gestor</small>
+                                <div class="small">{{ contrato.gestor_contrato }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Vence em</small>
+                                 <div class="small {% if contrato.dias_para_vencimento <= 90 %}text-danger{% else %}text-success{% endif %}">
+                                    {{ contrato.dias_para_vencimento }} dias
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100" role="group">
+                            <a href="{% url "detalhe" contrato.pk %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                            <a href="{% url "graphy" contrato.pk %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-chart-bar"></i> Gráficos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!--Paginas-->
+    {% if is_paginated %}
+    <nav aria-label="Navegação de páginas">
+         <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}">Primeira</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">Anterior</a></li>
+            <li class="page-item active">
+                <span class="page-link">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Próxima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}">Última</a>
+                    </li>
+                {% endif %}
+            {% endif %}
+         </ul>
+    </nav>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock content %}
+{% include "footer" %}

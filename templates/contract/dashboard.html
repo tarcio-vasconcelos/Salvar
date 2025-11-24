@@ -1,0 +1,151 @@
+{% extends "base/header.html" %}
+{% block title %}Dashboard{% endblock title %}
+{% include "navbar" %}
+
+{% block content %}
+    <!--Título-->
+    <section class="pt-3 pb-4 mb-4 border-bottom">
+        <header class="d-flex justify-content-between align-items-center flex-wrap">
+            <h1 class="h2 mb-0">Contratos - Dashboard</h1>
+        </header>
+    </section>
+    <!--Cards-->
+    <div class="row mb-4">
+        <!--Total-->
+        <div class="col-md-3">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                             <h5 class="card-title text-muted">Total de Contratos</h5>
+                              <h2 class="text-secondary">{{ total_contratos }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-file-earmark-text text-secondary" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Alerta-->
+        <div class="col-md-3">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title text-muted">Contratos com Alerta</h5>
+                            <h2 class="text-secondary">{{ notificacoes|length }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-exclamation-triangle text-secondary" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--notificacoes-->
+    {% if notificacoes %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                         <h5 class="card-title mb-0">
+                            <i class="bi bi-bell"></i> Notificações
+                         </h5>
+                    </div>
+                    <div class="card-body">
+                        {% for notificacao in notificacoes %}
+                            {% if notificacao.contrato.precisa_notificacao_vencimento or notificacao.contrato.precisa_notificacao_saldo %}
+                                <div class="notification-item mb-3 {% if notificacao.tipo == 'saldo' %}notification-warning{% else %}notification-warning{% endif %}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <p class="mb-1">
+                                                <a style="color:black" href="{% url 'detalhe' notificacao.contrato.pk %}" class="text-decoration-none">
+                                                {{ notificacao.contrato.numero_contrato }} - {{ notificacao.contrato.nome_empresa }}
+                                                </a>
+                                            </p>
+                                            <p class="mb-0 text-muted">{{ notificacao.mensagem }}</p>
+                                        </div>
+                                        <span class="badge bg-{% if notificacao.tipo == 'saldo' %}warning{% else %}warning{% endif %}">
+                                            {% if notificacao.tipo == 'saldo' %}Saldo Baixo{% else %}Vencimento{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!--Recentes-->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history"></i> Contratos Recentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                {% if contratos_recentes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                <th>Número</th>
+                                <th>Empresa</th>
+                                <th>Gestor</th>
+                                <th>Saldo Total</th>
+                                <th>Saldo Restante</th>
+                                <th>Status</th>
+                                <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for contrato in contratos_recentes %}
+                            <tr>
+                                <td>{{ contrato.numero_contrato }}</td>
+                                <td>{{ contrato.nome_empresa }}</td>
+                                <td>{{ contrato.gestor_contrato }}</td>
+                                <td>R$ {{ contrato.saldo_total}}</td>
+                                <td>R$ {{ contrato.saldo_restante }}</td>
+                                <td>
+                                    {% if contrato.precisa_notificacao_saldo%}
+                                        <span class="badge bg-warning">Saldo Baixo</span>
+                                    {% elif contrato.precisa_notificacao_vencimento %}
+                                        <span class="badge bg-warning">Vence em Breve</span>
+                                    {% else %}
+                                        <span class="badge bg-success">{{contrato.status}}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'detalhe' contrato.pk %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url "contract_list" %}" class="btn btn-primary">
+                            Ver Todos os Contratos
+                        </a>
+                    </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">Nenhum contrato cadastrado ainda.</p>
+                </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+{% include "footer" %}

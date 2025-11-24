@@ -1,0 +1,112 @@
+{% extends "base/header.html" %}
+{% block title %}Control{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Lista de Empenhos</h2>
+
+    <div class="card mb-4">
+        <div class="card-header">Filtrar Empenhos por Exercício Anual e Categoria</div>
+        <div class="card-body">
+	            <form method="get" action="{% url 'control_list' %}" class="row g-3 align-items-center">
+	                <div class="col-md-3">
+	                    <label for="exercicio_select" class="form-label">Exercício Anual:</label>
+	                    <select name="exercicio" id="exercicio_select" class="form-select">
+	                        <option value="">Selecione um Exercício</option>
+	                        {% for ex in exercicios_anuais %}
+	                            <option value="{{ ex.id }}" {% if exercicio_selecionado and exercicio_selecionado.id == ex.id %}selected{% endif %}>{{ ex.ano }}</option>
+	                        {% endfor %}
+	                    </select>
+		                </div>
+		                <div class="col-md-3">
+		                    <label for="categoria_select" class="form-label">Categoria:</label>
+		                    <select name="categoria" id="categoria_select" class="form-select">
+		                        <option value="">Todas as Categorias</option>
+		                        {% for cat in categorias %}
+		                            <option value="{{ cat.id }}" {% if categoria_selecionada_id == cat.id %}selected{% endif %}>{{ cat.nome }}</option>
+		                        {% endfor %}
+		                    </select>
+		                </div>
+		                <div class="col-md-6 d-flex align-items-end">
+		                    <button type="submit" class="btn btn-secondary me-2">Aplicar Filtro</button>
+		                    <a href="{% url 'control_list' %}" class="btn btn-outline-secondary">Limpar Filtro</a>
+		                </div>
+		            </form>
+        </div>
+    </div>
+
+	    {% if exercicio_selecionado %}
+	    <div class="card mb-4">
+	        {% if categoria_selecionada %}
+	        <div class="card-header">Informações de Orçamento: {{ exercicio_selecionado.ano }} - {{ categoria_selecionada.nome }}</div>
+	        <div class="card-body">
+	            <p><strong>Orçamento da Categoria:</strong> R$ {{ orcamento_categoria.valor_orcamento_categoria|floatformat:2 }}</p>
+	            <p><strong>Saldo Disponível da Categoria:</strong> R$ {{ saldo_disponivel_categoria|floatformat:2 }}</p>
+
+	        </div>
+	        {% else %}
+	        <div class="card-header">Informações do Exercício Anual: {{ exercicio_selecionado.ano }}</div>
+	        <div class="card-body">
+	            <p><strong>Orçamento Anual (Referência):</strong> R$ {{ exercicio_selecionado.valor_orcamento|floatformat:2 }}</p>
+
+	
+	            <h5 class="mt-4">Orçamento por Categoria</h5>
+	            <div class="table-responsive">
+	                <table class="table table-sm table-bordered">
+	                    <thead>
+	                        <tr>
+	                            <th>Categoria</th>
+	                            <th>Orçamento</th>
+	                            <th>Saldo Disponível</th>
+	                        </tr>
+	                    </thead>
+	                    <tbody>
+	                        {% for orcamento in orcamentos_por_categoria %}
+	                        <tr>
+	                            <td>{{ orcamento.categoria.nome }}</td>
+	                            <td>R$ {{ orcamento.valor_orcamento_categoria|floatformat:2 }}</td>
+	                            <td>R$ {{ orcamento.get_saldo_disponivel_categoria|floatformat:2 }}</td>
+	                        </tr>
+	                        {% endfor %}
+	                    </tbody>
+	                </table>
+	            </div>
+	        </div>
+	        {% endif %}
+	    </div>
+	    {% endif %}
+
+    {% if empenhos %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Número do Empenho</th>
+                    <th>Exercício Anual</th>
+                    <th>Categoria</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                    <th>Código Orçamentário</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for empenho in empenhos %}
+                <tr>
+                    <td>{{ empenho.numero_empenho }}</td>
+                    <td>{{ empenho.exercicio_anual.ano }}</td>
+                    <td>{{ empenho.categoria|default:"N/A" }}</td>
+                    <td>R$ {{ empenho.valor|floatformat:2 }}</td>
+                    <td>{{ empenho.data_empenho|date:"d/m/Y" }}</td>
+                    <td>{{ empenho.codigo_orcamentario|default:"N/A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        Nenhum empenho cadastrado ainda.
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}

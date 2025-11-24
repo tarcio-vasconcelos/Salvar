@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    {% block head %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestão de Contratos{% endblock title %}</title>
+    <title>rice</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{% static 'base/style.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% endblock head %}
+</head>
+<body>
+    {% block navbar %}
+    <header class="cabecalho">
+        <div id = 'header'>
+            <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">Gestão de Contratos</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url "home" %}"><i class="bi bi-house"></i>Home</a>
+                            </li>
+                            <li class="nav-item active dropdown ">
+                                <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-file-earmark-text"></i>Contratos
+                                </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url "dashboard_contract" %}">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url "contract_list" %}">Lista</a></li>
+                                <li><a class="dropdown-item" href="{% url "metrics" %}">Métricas</a></li>
+                            </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url "control_list" %}"><i class="bi bi-bar-chart"></i>Controle de Francionamento</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url "laws_list" %}"><i class="bi bi-book"></i>Legislação</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url "admin:index" %}"><i class="bi bi-gear"></i>Administrador</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+    {% block content %}{% endblock content %}
+    {% endblock navbar %}
+    {% block footer %}
+    <footer class="text-center py-3 mt-5 border-top">
+        <div class="container">
+            <img src="{% static "imagens/image.png" %}" alt="Logo" class="img-fluid" style="max-height: 60px;">
+            <p class="mt-2 mb-0 text-muted">&copy; {{ year }} desenvolvido pela Seplag - secretaria de planejamento gestão e desenvolvimento regional</p>
+        </div>
+    </footer>
+    {% endblock footer %}
+</body>
+</html>

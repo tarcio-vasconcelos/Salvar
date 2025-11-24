@@ -1,0 +1,20 @@
+{% extends "base/header.html" %}
+{% block title %}Home{% endblock title %}
+{% include "navbar" %}
+
+{% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Bem-vindo</h1>
+    </div>
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <p class="p">Selecione, na barra de tarefas ou nos botões abaixo, a função que deseja utilizar para navegar pelo sistema. Cada opção oferece um conjunto de ferramentas e recursos específicos que permitem ao usuário executar diferentes ações de forma simples e intuitiva. Escolha a opção que melhor atende à sua necessidade para continuar.</p>
+    </div>
+
+    <div>
+        <a href="{% url "dashboard_contract" %}" class="btn btn-outline-secondary">Contratos</a>
+        <a href="{% url "control_list" %}" class="btn btn-outline-secondary">Controle de Fracionamento</a>
+        <a href="{% url "laws_list" %}" class="btn btn-outline-secondary">Legislação</a>
+    </div>
+{% endblock content %}
+{% include "footer" %}

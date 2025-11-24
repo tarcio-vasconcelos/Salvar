@@ -1,0 +1,194 @@
+{% extends "base/header.html" %}
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4><i class="fas fa-file-contract"></i> Contrato {{ contrato.numero_contrato }}</h4>
+                    <div>
+                        <a class="btn btn-info btn-sm">
+                            {{ contrato.status }}
+                        </a>
+                        {% if contrato.existente == 1 %}
+                        <a class="btn btn-secondary btn-sm">
+                            Valor secundário
+                        </a>
+                        {%endif%}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Notificações -->
+                    {% for notificacao in notificacoes %}
+                    <div class="alert alert-{{ notificacao.tipo }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i> {{ notificacao.mensagem }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Informações Básicas</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Número:</strong></td>
+                                    <td>{{ contrato.numero_contrato }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>SEI:</strong></td>
+                                    <td>{{ contrato.sei }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Empresa:</strong></td>
+                                    <td>{{ contrato.nome_empresa }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Gestor:</strong></td>
+                                    <td>{{ contrato.gestor_contrato }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fiscal:</strong></td>
+                                    <td>{{ contrato.fiscal_contrato }}</td>
+                                </tr>
+                                {% if contrato.secundario == 1 %}
+                                <tr>
+                                    <td><strong>Contrato principal:</strong></td>
+                                    <td><a href="{{ contrato.maior }}">{{ contrato.maior }}</a></td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Vigência e Valores</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Data Início:</strong></td>
+                                    <td>{{ contrato.data_inicio|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Data Término:</strong></td>
+                                    <td>{{ contrato.data_termino|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Vigência:</strong></td>
+                                    <td>{{ contrato.vigencia }} meses</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Saldo Total:</strong></td>
+                                    <td class="text-success">R$ {{ contrato.saldo_total }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Saldo Utilizado:</strong></td>
+                                    <td class="text-danger">R$ {{ contrato.saldo_utilizado }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Saldo Restante:</strong></td>
+                                    <td class="text-info">R$ {{ contrato.saldo_restante }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 class="text-muted">Objeto do Contrato</h6>
+                        <p class="text-muted">{{ contrato.objeto }}</p>
+                    </div>
+
+                    <!-- Barra de Progresso -->
+                    <div class="mt-3">
+                        <h6 class="text-muted">Utilização do Saldo</h6>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar {% if contrato.percentual_utilizado > 70 %}bg-danger{% elif contrato.percentual_utilizado > 50 %}bg-warning{% else %}bg-success{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ contrato.percentual_utilizado }}%">
+                                {{ contrato.percentual_utilizado|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Saldos Mensais -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6><i class="fas fa-calendar-alt"></i> Gastos Mensais</h6>
+                </div>
+                <div class="card-body">
+                    {% if saldos_mensais %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Mês/Ano</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for saldo in saldos_mensais %}
+                                    <tr>
+                                        <td>{{ saldo.mes }}/{{ saldo.ano }}</td>
+                                        <td class="text-danger">R$ {{ saldo.valor_gasto }}</td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">
+                            <i class="fas fa-info-circle"></i><br>
+                            Nenhum gasto mensal registrado ainda.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Status do Contrato -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-info-circle"></i> Status do Contrato</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border rounded p-2">
+                                <h6 class="text-muted mb-1">Dias Restantes</h6>
+                                <h4 class="{% if contrato.dias_para_vencimento <= 90 %}text-danger{% else %}text-success{% endif %}">
+                                    {{ contrato.dias_para_vencimento }}
+                                </h4>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-2">
+                                <h6 class="text-muted mb-1">% Utilizado</h6>
+                                <h4 class="{% if contrato.percentual_utilizado > 70 %}text-danger{% else %}text-success{% endif %}">
+                                    {{ contrato.percentual_utilizado|floatformat:1 }}%
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <a href="{% url 'contract_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar à Lista
+            </a>
+            <a href="{% url "graphy" contrato.pk %}" class="btn btn-info">
+                <i class="fas fa-chart-line"></i> Ver Gráficos
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+{% include "footer" %}

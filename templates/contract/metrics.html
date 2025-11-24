@@ -1,0 +1,119 @@
+{% extends "base/header.html" %}
+{% block title %}Métricas{% endblock title %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-chart-line"></i> Métricas de Contratos
+    </h1>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-users"></i> Contratos por Gestor
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for gestor in contratos_por_gestor %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="/contract/list?search={{ gestor.gestor_contrato|urlencode }}">{{ gestor.gestor_contrato }}</a>
+                        <span class="badge bg-primary rounded-pill">{{ gestor.count }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item">Nenhum gestor encontrado.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-user-tie"></i> Contratos por Fiscal
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for fiscal in contratos_por_fiscal %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="/contract/list?search={{ fiscal.fiscal_contrato|urlencode }}">{{ fiscal.fiscal_contrato }}</a>
+                        <span class="badge bg-primary rounded-pill">{{ fiscal.count }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item">Nenhum fiscal encontrado.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-calendar-times"></i> Contratos Próximos de Vencer
+                </h6>
+            </div>
+            <div class="card-body">
+                <h4 class="text-danger">{{ contratos_vencimento_proximo }}</h4>
+                <p class="card-text text-muted">Contratos que vencem nos próximos 90 dias.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Contratos com Saldo Baixo
+                </h6>
+            </div>
+            <div class="card-body">
+                <h4 class="text-warning">{{ contratos_baixo_saldo }}</h4>
+                <p class="card-text text-muted">Contratos com mais de 70% do saldo utilizado.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-calendar-times"></i> Contratos Totais
+                </h6>
+            </div>
+            <div class="card-body">
+                <h4 class="text-secondary">{{ contratos_normais }}</h4>
+                <p class="card-text text-muted">Contratos totais</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-calendar-times"></i> Contratos Vigentes
+                </h6>
+            </div>
+            <div class="card-body">
+                <h4 class="text-secondary">{{ contratos_ativos }}</h4>
+                <p class="card-text text-muted">Contratos que estão em vigência</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+{% include "footer" %}

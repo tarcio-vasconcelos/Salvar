@@ -7,20 +7,38 @@ from django.core.paginator import Paginator
 import unicodedata
 from django.db import models
 from django.http import JsonResponse
+from decimal import Decimal
+from django.core.mail import send_mail
 
 # Create your views here.
 def home(request):
-    return render(request,'contract\index.html')
+    contratos = Contrato.objects.all()
+    contratos_com_alerta = contratos.filter(
+        Q(status='ativo') & (
+        Q(saldos_mensais__isnull=False) &
+        Q(email=False) |
+        Q(data_termino__lte=date.today() + timedelta(days=150)) &
+        Q(email=False)
+        )
+    )
+    if contratos_com_alerta:
+        for contrato in contratos_com_alerta:
+            send_mail(
+                f"Contrato {contrato.numero_contrato} em alerta!",
+                f"O {contrato.numero_contrato} da empresa {contrato.nome_empresa} precisa de atenção!",
+                None,
+                ["seplag.uadtg@gmail.com"],
+            )
+    return render(request,'contract/index.html')
 
 def dashboard(request):
-    """View para o dashboard principal"""
     contratos = Contrato.objects.all()
     pre_total_contratos = contratos.filter(Q(status = 'ativo'))
     total_contratos = pre_total_contratos.count()
     contratos_com_alerta = contratos.filter(
         Q(status='ativo') & (
         Q(saldos_mensais__isnull=False) |
-        Q(data_termino__lte=date.today() + timedelta(days=90))
+        Q(data_termino__lte=date.today() + timedelta(days=150))
     )
     ).distinct()
     
@@ -59,7 +77,7 @@ class ContratoList(ListView):
         search = self.request.GET.get('search')
         if search:
             if search.lower() == 'venc':
-                queryset = queryset.filter()
+                queryset = queryset.filter(self.q_precisa_notificacao())
                 return queryset
             if search.lower() == 'vig':
                 search = 'ativo'
@@ -93,7 +111,7 @@ class ContratoList(ListView):
         if search:
             produtos = produtos.filter(nome__icontains=search)
 
-        paginator = Paginator(produtos, 10)  # 10 produtos por página
+        paginator = Paginator(produtos, 10)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -102,7 +120,8 @@ class ContratoList(ListView):
             'is_paginated': page_obj.has_other_pages(),
             'search': search,
         }
-        return render(request, 'contract\contract_list.html', context)
+
+        return render(request, 'contract/contract_list.html', context)
 
 def metrics(request):
     contratos_por_gestor = Contrato.objects.filter(status="ativo").values(
@@ -114,7 +133,7 @@ def metrics(request):
     ).annotate(count=models.Count('id')).order_by('-count')
 
     contratos_vencimento_proximo = Contrato.objects.filter(
-        data_termino__lte=date.today() + timedelta(days=90),
+        data_termino__lte=date.today() + timedelta(days=150),
         data_termino__gt=date.today(),
         status='ativo'
     ).count()
@@ -170,7 +189,6 @@ class ContractDetail(DetailView):
         return context
     
 def graphy(request, pk):
-    """View para exibir gráficos de um contrato específico"""
     contrato = get_object_or_404(Contrato, pk=pk)
     
     context = {
@@ -180,9 +198,7 @@ def graphy(request, pk):
     
     return render(request, 'contract\graphy.html', context)
 
-
 def evolution(request, pk):
-    """API para dados do gráfico de evolução do saldo"""
     contrato = get_object_or_404(Contrato, pk=pk)
     saldos = contrato.saldos_mensais.all().order_by('ano', 'mes')
     
@@ -219,56 +235,65 @@ def evolution(request, pk):
     
     return JsonResponse(data)
 
-
 def monthly_expenses(request, pk):
     contrato = get_object_or_404(Contrato, pk=pk)
     saldos = contrato.saldos_mensais.all().order_by('ano', 'mes')
-    
+
     labels = []
-    dados = []
-    
+    acima_media = []
+    abaixo_media = []
+
+    valor_mensal_fixo = Decimal(contrato.calcular_valor_mensal_fixo)
+
     for saldo in saldos:
         labels.append(f"{saldo.mes:02d}/{saldo.ano}")
-        dados.append(float(saldo.valor_gasto))
-    
+
+        if saldo.valor_gasto > valor_mensal_fixo:
+            acima_media.append(float(saldo.valor_gasto))
+            abaixo_media.append(None)
+        else:
+            acima_media.append(None)
+            abaixo_media.append(float(saldo.valor_gasto))
+
     if not saldos:
         today = date.today()
         labels.append(f"{today.month:02d}/{today.year}")
-        dados.append(0.0)
+        acima_media.append(0)
+        abaixo_media.append(0)
 
-    fixed_monthly_value = float(contrato.calcular_valor_mensal_fixo())
-    fixed_monthly_data = [fixed_monthly_value] * len(labels)
-
-    background_colors = [
-        'rgba(255, 99, 132, 0.8)' if valor > fixed_monthly_value else 'rgba(54, 162, 235, 0.8)'
-        for valor in dados
-    ]
+    linha_media = [float(valor_mensal_fixo)] * len(labels)
 
     data = {
         'labels': labels,
-        'datasets': [{
-            'label': 'Gastos Acima da Média',
-            'data': dados,
-            'backgroundColor': background_colors
-        },
-        {
-            'label': 'Valor Mensal Fixo',
-            'data': fixed_monthly_data,
-            'borderColor': 'rgb(252, 41, 0)',
-            'backgroundColor': 'rgba(252, 41, 0)',
-            'type': 'line',
-            'fill': False,
-            'spanGaps': True,
-        },
-        {
-            'label': 'Valor Abaixo da Média',
-            'backgroundColor': 'rgba(54, 162, 235, 0.8)',
-        }
+        'datasets': [
+            {
+                'label': 'Gastos Acima da Média',
+                'data': acima_media,
+                'backgroundColor': 'rgba(255, 99, 132, 0.8)',
+                'borderColor': 'rgba(255, 99, 132, 1)',
+                'type': 'bar'
+            },
+            {
+                'label': 'Gastos Abaixo da Média',
+                'data': abaixo_media,
+                'backgroundColor': 'rgba(54, 162, 235, 0.8)',
+                'borderColor': 'rgba(54, 162, 235, 1)',
+                'type': 'bar'
+            },
+            {
+                'label': 'Valor Mensal Fixo',
+                'data': linha_media,
+                'borderColor': 'rgb(252, 41, 0)',
+                'backgroundColor': 'rgba(252, 41, 0)',
+                'type': 'line',
+                'fill': False,
+                'spanGaps': True,
+                'tension': 0
+            }
         ]
     }
-    
-    return JsonResponse(data)
 
+    return JsonResponse(data)
 
 def balance(request, pk):
     contrato = get_object_or_404(Contrato, pk=pk)

@@ -1,6 +1,7 @@
 {% extends "base/header.html" %}
 {% block title %}Lista{% endblock title %}
 
+{% load humanize %}
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -55,7 +56,7 @@
                         <div class="row text-center mb-3">
                             <div class="col-6">
                                 <small class="text-muted">Saldo Total</small>
-                                <div class="fw-bold text-success">R$ {{ contrato.saldo_total }}</div>
+                                <div class="fw-bold text-success">R$ {{ contrato.saldo_total|intcomma }}</div>
                             </div>
                             <div class="col-6">
                                 <small class="text-muted">Utilizado</small>
@@ -98,17 +99,28 @@
     </div>
 
     <!--Paginas-->
-    {% if is_paginated %}
-    <nav aria-label="Navegação de páginas">
-         <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}">Primeira</a></li>
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">Anterior</a></li>
-            <li class="page-item active">
-                <span class="page-link">
-                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-                </span>
-            </li>
+    <div class="row">
+        <nav aria-label="Navegação de páginas">
+            <ul class="pagination justify-content-center">
+                
+                {# Botões de Início e Anterior #}
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}">Primeira</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">Anterior</a>
+                    </li>
+                {% endif %}
+
+                {# Indicador de Página Atual (Sempre visível) #}
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {# Botões de Próxima e Última #}
                 {% if page_obj.has_next %}
                     <li class="page-item">
                         <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Próxima</a>
@@ -117,10 +129,10 @@
                         <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}">Última</a>
                     </li>
                 {% endif %}
-            {% endif %}
-         </ul>
-    </nav>
-    {% endif %}
+
+            </ul>
+        </nav>
+    </div>
     {% endif %}
 </div>
 {% endblock content %}

@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
 from datetime import date
+from django.db.models import Q
 
 # Create your models here.
 class Contrato(models.Model):
@@ -35,7 +36,7 @@ class Contrato(models.Model):
         default='ativo',
         verbose_name="Status do Contrato"
     )
-
+    email = models.BooleanField(verbose_name="Notificado", default=False, editable=False)
     def __str__(self):
         return f"{self.numero_contrato} - {self.nome_empresa}"
     
@@ -65,7 +66,7 @@ class Contrato(models.Model):
         hoje = date.today()
         if self.data_termino > hoje:
             return (self.data_termino - hoje).days
-        return 0 
+        return 0
 
     @property
     def precisa_notificacao_saldo(self):
@@ -76,7 +77,12 @@ class Contrato(models.Model):
     def precisa_notificacao_vencimento(self):
         if self.status == 'ativo':
             return self.dias_para_vencimento <= 150 and self.dias_para_vencimento > 0
-    
+
+    @staticmethod
+    def q_precisa_notificacao(self):
+        return Q(self.dias_para_vencimento <= 150 and self.dias_para_vencimento > 0)
+        
+    @property
     def calcular_valor_mensal_fixo(self):
         if self.vigencia and self.vigencia > 0:
             return self.saldo_total / self.vigencia

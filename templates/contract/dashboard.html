@@ -2,6 +2,7 @@
 {% block title %}Dashboard{% endblock title %}
 {% include "navbar" %}
 
+{% load humanize %}
 {% block content %}
     <!--Título-->
     <section class="pt-3 pb-4 mb-4 border-bottom">
@@ -111,8 +112,8 @@
                                 <td>{{ contrato.numero_contrato }}</td>
                                 <td>{{ contrato.nome_empresa }}</td>
                                 <td>{{ contrato.gestor_contrato }}</td>
-                                <td>R$ {{ contrato.saldo_total}}</td>
-                                <td>R$ {{ contrato.saldo_restante }}</td>
+                                <td>R$ {{ contrato.saldo_total|intcomma }}</td>
+                                <td>R$ {{ contrato.saldo_restante|intcomma }}</td>
                                 <td>
                                     {% if contrato.precisa_notificacao_saldo%}
                                         <span class="badge bg-warning">Saldo Baixo</span>

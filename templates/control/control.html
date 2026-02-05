@@ -1,6 +1,8 @@
 {% extends "base/header.html" %}
-{% block title %}Control{% endblock title %}
+{% block title %}Laws{% endblock title %}
+{% include "navbar" %}
 
+{% load humanize %}
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">Lista de Empenhos</h2>
@@ -40,39 +42,56 @@
 	        {% if categoria_selecionada %}
 	        <div class="card-header">Informações de Orçamento: {{ exercicio_selecionado.ano }} - {{ categoria_selecionada.nome }}</div>
 	        <div class="card-body">
-	            <p><strong>Orçamento da Categoria:</strong> R$ {{ orcamento_categoria.valor_orcamento_categoria|floatformat:2 }}</p>
-	            <p><strong>Saldo Disponível da Categoria:</strong> R$ {{ saldo_disponivel_categoria|floatformat:2 }}</p>
+	            <p><strong>Orçamento da Categoria:</strong> R$ {{ orcamento_categoria.valor_orcamento_categoria|intcomma}}</p>
+	            <p><strong>Saldo Disponível da Categoria:</strong> R$ {{ saldo_disponivel_categoria|intcomma }}</p>
 
 	        </div>
-	        {% else %}
-	        <div class="card-header">Informações do Exercício Anual: {{ exercicio_selecionado.ano }}</div>
-	        <div class="card-body">
-	            <p><strong>Orçamento Anual (Referência):</strong> R$ {{ exercicio_selecionado.valor_orcamento|floatformat:2 }}</p>
+{% else %}
+		        <div class="card-header">Informações do Exercício Anual: {{ exercicio_selecionado.ano }}</div>
+		        <div class="card-body">
+		            <p><strong>Orçamento Anual (Referência):</strong> R$ {{ exercicio_selecionado.valor_orcamento|intcomma }}</p>
+		            <p><strong>Orçamento Total (Soma das Categorias):</strong> R$ {{ orcamento_total|intcomma }}</p>
+		            <p><strong>Saldo Disponível (Soma das Categorias):</strong> R$ {{ saldo_disponivel|intcomma }}</p>
 
-	
-	            <h5 class="mt-4">Orçamento por Categoria</h5>
-	            <div class="table-responsive">
-	                <table class="table table-sm table-bordered">
-	                    <thead>
-	                        <tr>
-	                            <th>Categoria</th>
-	                            <th>Orçamento</th>
-	                            <th>Saldo Disponível</th>
-	                        </tr>
-	                    </thead>
-	                    <tbody>
-	                        {% for orcamento in orcamentos_por_categoria %}
-	                        <tr>
-	                            <td>{{ orcamento.categoria.nome }}</td>
-	                            <td>R$ {{ orcamento.valor_orcamento_categoria|floatformat:2 }}</td>
-	                            <td>R$ {{ orcamento.get_saldo_disponivel_categoria|floatformat:2 }}</td>
-	                        </tr>
-	                        {% endfor %}
-	                    </tbody>
-	                </table>
-	            </div>
-	        </div>
-	        {% endif %}
+		
+		            <h5 class="mt-4">Orçamento por Categoria</h5>
+		            <div class="table-responsive">
+		                <table class="table table-sm table-bordered">
+		                    <thead>
+		                        <tr>
+		                            <th>Categoria</th>
+		                            <th>Orçamento</th>
+		                            <th>Saldo Disponível</th>
+		                            <th>% Saldo</th>
+		                        </tr>
+		                    </thead>
+		                    <tbody>
+		                        {% for orcamento in orcamentos_por_categoria %}
+		                        <tr>
+		                            <td>{{ orcamento.categoria.nome }}</td>
+		                            <td>R$ {{ orcamento.valor_orcamento_categoria|floatformat:2 }}</td>
+		                            <td>R$ {{ orcamento.get_saldo_disponivel_categoria|floatformat:2 }}</td>
+		                            <td class="{% if orcamento.saldo_percentual < 30 %}table-danger{% elif orcamento.saldo_percentual < 50 %}table-warning{% else %}table-success{% endif %}">
+		                                {{ orcamento.saldo_percentual|floatformat:2 }}%
+		                            </td>
+		                        </tr>
+		                        {% endfor %}
+		                    </tbody>
+		                </table>
+		            </div>
+		            
+					{% for orcamento in orcamentos_por_categoria %}
+						{% if orcamento.saldo_percentual <= 30 %}
+							<div class="alert alert-danger mt-3" role="alert">
+								<strong>ALERTA DE SALDO BAIXO:</strong>
+								O saldo da categoria <strong>{{ orcamento.categoria.nome }}</strong> 
+								está em apenas {{ orcamento.saldo_percentual|floatformat:2 }}% 
+								(R$ {{ orcamento.get_saldo_disponivel_categoria|floatformat:2 }}).
+							</div>
+						{% endif %}
+					{% endfor %}
+		        </div>
+		        {% endif %}
 	    </div>
 	    {% endif %}
 
@@ -109,4 +128,4 @@
     </div>
     {% endif %}
 </div>
-{% endblock content %}
+{% endblock %}

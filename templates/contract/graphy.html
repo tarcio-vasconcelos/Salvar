@@ -85,7 +85,7 @@
                 </h6>
             </div>
             <div class="card-body">
-                <canvas id="graficoGastosMensais" width="400" height="200"></canvas>
+                <canvas id="monthly_expenses" width="400" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -208,7 +208,10 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('{% url "monthly_expenses" contrato.pk %}')
         .then(response => response.json())
         .then(data => {
-            const ctx = document.getElementById('graficoGastosMensais').getContext('2d');
+            const ctx = document
+                .getElementById('monthly_expenses')
+                .getContext('2d');
+
             new Chart(ctx, {
                 type: 'bar',
                 data: data,
@@ -220,14 +223,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             text: 'Gastos por Mês'
                         },
                         legend: {
-                            position: 'bottom' 
+                            position: 'bottom'
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) {
+                                callback: function (value) {
                                     return 'R$ ' + value.toLocaleString('pt-BR');
                                 }
                             }
@@ -235,6 +238,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar os dados:', error);
         });
 });
 </script>

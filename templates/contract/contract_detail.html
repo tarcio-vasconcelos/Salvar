@@ -1,6 +1,7 @@
 {% extends "base/header.html" %}
 {% block title %}Home{% endblock title %}
 
+{% load humanize %}
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -77,15 +78,15 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Saldo Total:</strong></td>
-                                    <td class="text-success">R$ {{ contrato.saldo_total }}</td>
+                                    <td class="text-success">R$ {{ contrato.saldo_total|intcomma }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Saldo Utilizado:</strong></td>
-                                    <td class="text-danger">R$ {{ contrato.saldo_utilizado }}</td>
+                                    <td class="text-danger">R$ {{ contrato.saldo_utilizado|intcomma }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Saldo Restante:</strong></td>
-                                    <td class="text-info">R$ {{ contrato.saldo_restante }}</td>
+                                    <td class="text-info">R$ {{ contrato.saldo_restante|intcomma }}</td>
                                 </tr>
                             </table>
                         </div>
